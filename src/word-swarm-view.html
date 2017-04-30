@@ -82,7 +82,7 @@
                 swarmWords:{
                     type: Array,
                     notify:true,
-                    value:[],
+                    value:[]
                 },
                 consoleWords:{
                     type: Array,
@@ -91,8 +91,7 @@
                 }
             },
             observers:[
-                '_updateWords(words.*)',
-                '_userSwarmObserver(userSwarm.*)'
+                '_updateWords(words.*)'
             ],
             ready:function(){
                 this.$.word.addEventListener('iron-overlay-closed',()=>{
@@ -150,8 +149,8 @@
             _swarmChosen: function(){
                 this.consoleWords=[];
                 this.swarmWords=[];
-            },
-            _userSwarmObserver: function(){
+                this.$.words.reset();
+                this.$.userSwarm.reset();
 
             },
             _addWord: function(){
