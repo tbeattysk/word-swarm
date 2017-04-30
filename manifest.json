@@ -1,0 +1,7 @@
+{
+  "name": "word-swarm",
+  "short_name": "word-swarm",
+  "description": "A tool for collaboratively building connections bettween vocabulary terms.",
+  "start_url": "/",
+  "display": "standalone"
+}

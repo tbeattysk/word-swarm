@@ -1,0 +1,101 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="word-swarm-login.html">
+<link rel="import" href="word-swarm-command.html">
+<link rel="import" href="word-swarm-init.html">
+<link rel="import" href="word-swarm-404-warning.html">
+<link rel="import" href="word-swarm-view.html">
+<dom-module id="word-swarm-app">
+  <template>
+    <style>
+       :host {
+        display: block;
+      }
+      app-drawer{
+        z-index: 1
+      }
+    </style>
+    <firebase-app 
+      id="firebase" 
+      auth-domain="word-swarm.firebaseapp.com" 
+      database-url="https://word-swarm.firebaseio.com/" 
+      api-key="AIzaSyBypfphmLS-4vCMR0f3rmSVmvYd9N3rlrQ">
+    </firebase-app>
+    <firebase-auth user="{{user}}"></firebase-auth>
+    <firebase-document
+      id="userPresets"
+      path=""
+      data={{presets}}>
+    </firebase-document>
+    <app-header>
+      <app-toolbar>
+        <paper-icon-button icon="menu" onclick="drawer.toggle()"></paper-icon-button>
+      </app-toolbar>
+    </app-header>
+   
+    <app-drawer id="drawer" swipe-open>
+      <word-swarm-login></word-swarm-login>
+      <word-swarm-command page={{page}} activeswarm={{activeSwarm}}></word-swarm-command>
+    </app-drawer>
+    <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
+      <word-swarm-init name="init" page={{page}} activeswarm={{activeSwarm}}></word-swarm-init>
+      <word-swarm-view name="view" swarm={{activeSwarm}}></word-swarm-view>
+      <word-swarm-404-warning name="404"></word-swarm-404-warning>
+    </iron-pages>
+
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'word-swarm-app',
+      properties:{
+        user:{
+          type:Object,
+          observer:"_userUpdate"
+        },
+        presets:{
+            type: Object,
+            notify: true,
+            value:{
+              defaulSwarm:""
+            }
+        },
+        activeSwarm:{
+          type:String,
+          value:"",
+          observer:"_swarmChanged"
+        },
+        page: {
+          type: String,
+          value: 'view'
+        },
+      },
+      _swarmChanged: function(){
+         if(this.presets.init){
+          return this.$.userPresets.child('swarmVisits').push({
+            time: {".sv": "timestamp"},
+            swarm: this.activeSwarm
+          })
+         }
+      },
+      _userUpdate: function(){
+        if(this.user){
+          this.$.userPresets.path = "/users/"+this.user.uid+"/presets";
+          return this.$.userPresets.initializeStoredValue()
+          .then(snap => {
+            this.activeSwarm = this.presets.defaultSwarm;
+          })
+        }
+      }
+    });
+  </script>
+</dom-module>

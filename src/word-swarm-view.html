@@ -1,0 +1,169 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">  
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">  
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">  
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">  
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">  
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">  
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">  
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="word-swarm-console.html">
+<link rel="import" href="word-swarm-engine.html">
+
+
+<dom-module id="word-swarm-view">
+    <template>
+        <style>
+            paper-icon-button#addButton {
+                background-color:rgb(204, 24, 30); 
+                color:white; 
+                border-radius:20px;
+                position: absolute;
+                bottom: 20px;
+                left: 20px;
+            }
+            app-drawer{               
+                --app-drawer-content-container:{
+                    background-color: rgba(210, 210, 210, 0.5);
+                } 
+            }
+        </style>
+        <firebase-auth user="{{user}}"></firebase-auth>
+        <firebase-document
+            id="userSwarm"
+            path="/users/[[user.uid]]/swarms/[[swarm]]"
+            data={{userSwarm}}>
+        </firebase-document>
+        <firebase-query
+            id="words"
+            path="/swarms/[[userSwarm.swarmId]]/words"
+            data={{words}}>
+        </firebase-query>
+        <firebase-query
+            id="userWords"
+            path="/swarms/[[userSwarm.swarmId]]/users/[[user.uid]]/wordsAdded"
+            data={{uswerWords}}>
+        </firebase-query>
+
+        <app-drawer id="consoledrawer" persistent align="right">
+            <word-swarm-console id="wordConsole" wordlist=[[consoleWords]]></word-swarm-console>
+        </app-drawer>
+        <div>
+            <word-swarm-engine id="wordSwarm" wordlist=[[swarmWords]]></word-swarm-engine>
+        </div>
+        <paper-dialog id="word" withBackdrop>
+            <paper-input id="newWord"></paper-input>
+            <div class="buttons">
+                <paper-button on-tap="_addWord">Add</paper-button>
+            </div>
+        </paper-dialog>
+        <paper-icon-button id="addButton" icon="add" onclick="word.open()"></paper-icon-button>
+    </template>
+    <script>
+        Polymer({
+            is: 'word-swarm-view',
+            properties:{
+                swarm:{
+                    type: String,
+                    notify:true,
+                    observer:"_swarmChosen"
+                },
+                words:{
+                    type: Array,
+                },
+                userWords:{
+                    type:Array,
+                    notify:true,
+                    value:[]
+                },
+                swarmWords:{
+                    type: Array,
+                    notify:true,
+                    value:[],
+                },
+                consoleWords:{
+                    type: Array,
+                    notify:true,
+                    value:[]
+                }
+            },
+            observers:[
+                '_updateWords(words.*)',
+                '_userSwarmObserver(userSwarm.*)'
+            ],
+            ready:function(){
+                this.$.word.addEventListener('iron-overlay-closed',()=>{
+                    this.$.newWord.value="";
+                });
+                this.$.wordConsole.addEventListener('removeFromConsole',(e)=>{
+                    this.push('swarmWords',(this.consoleWords.filter(function(word){
+                        return word.$key == e.detail})[0]));
+                    this.consoleWords = this.consoleWords.filter(function(word){
+                        return word.$key != e.detail});
+                    if(this.consoleWords.length == 0) {this.$.consoledrawer.close();}
+                });
+                this.$.wordSwarm.addEventListener('addToConsole',(e)=>{
+                    this.push('consoleWords',(this.swarmWords.filter(function(word){
+                        return word.$key == e.detail})[0]));
+                    this.swarmWords = this.swarmWords.filter(function(word){
+                        return word.$key != e.detail});
+                    this.$.consoledrawer.open();
+                });
+            },
+            _updateWords: function(words){
+                //if a word was added or changed update
+                this.words.forEach((el)=>{
+                    var exists=false;
+                    this.swarmWords.forEach((sw)=>{
+                        if(el.$key==sw.$key)exists=true;
+                        else sw=el;
+                    });
+                    if(!exists){
+                        this.consoleWords.forEach((cw)=>{
+                            if(el.$key==cw.$key)exists=true;
+                            else cw=el;
+                        });
+                    }
+                    if(!exists){
+                       this.push('swarmWords',el);
+                    }
+                });
+                //if a word was removed, take it out of swarm or console.
+                this.swarmWords.forEach((sw, index, object)=>{
+                    exists=false;
+                    this.words.forEach((el)=>{
+                        if(el.$key==sw.$key)exists=true;
+                    })
+                    if(exists=false){this.splice('swarmWords',index,1)}
+                });
+                this.consoleWords.forEach((cw, index, object)=>{
+                    exists=false;
+                    this.words.forEach((el)=>{ 
+                        if(el.$key==cw.$key)exists=true;
+                    })
+                    if(exists=false){this.splice('consoleWords',index,1)}
+                });
+            },
+            _swarmChosen: function(){
+                this.consoleWords=[];
+                this.swarmWords=[];
+            },
+            _userSwarmObserver: function(){
+
+            },
+            _addWord: function(){
+                this.$.userWords.ref.push({
+                    name:this.$.newWord.value,
+                    added:  {".sv": "timestamp"},
+                    update: true,
+                    wordId: false
+                });
+                this.$.newWord.value="";
+                this.$.word.close();
+            }
+        })
+    </script>
+</dom-module>

@@ -1,0 +1,53 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">  
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">  
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">  
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">  
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">  
+<link rel="import" href="../bower_components/paper-item/paper-item.html">  
+<link rel="import" href="../bower_components/paper-input/paper-input.html">  
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+
+<dom-module id="word-swarm-console">
+    <template>
+        <style>
+
+        </style>
+        <firebase-auth user="{{user}}"></firebase-auth>
+        <firebase-document
+            id="userSwarms"
+            path="/users/[[user.uid]]/swarms/[[swarm]]"
+            data={{userSwarm}}>
+        </firebase-document>
+        <firebase-query
+            id="mySwarm"
+            path="/swarms/[[userSwarm.swarmId]]/users/[[user.uid]]"
+            data={{mySwarm}}>
+        </firebase-query>
+        <template is="dom-repeat" items="[[wordlist]]" as="cword">
+                    <div on-tap="_removeWord" id="[[cword.$key]]">[[cword.name]]</div>
+        </template>
+    </template>
+    <script>
+        Polymer({
+            is: 'word-swarm-console',
+            properties:{
+                wordlist:{
+                    type:Array,
+                    notify:true
+                }
+            },
+            observers:[
+            ],
+            ready:function(){
+    
+            },
+            _removeWord:function(e){
+                this.fire("removeFromConsole",e.target.id);
+            }
+
+        })
+    </script>
+</dom-module>

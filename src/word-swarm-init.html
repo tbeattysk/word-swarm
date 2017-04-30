@@ -1,0 +1,102 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+
+<dom-module id="word-swarm-init">
+    <template>
+        <style>
+            .flex{
+                @apply(--layout-horizontal);
+                @apply(--layout-center-justified);
+            }
+            .addButton{
+                padding-top: 1.5em;
+            }
+            paper-button{
+                font-size: 24px;
+            }
+            paper-input{
+                --paper-input-container-input:{
+                        font-size: 24px;
+                };
+            }
+
+        </style>
+        <firebase-auth user={{user}}></firebase-auth>
+        <firebase-query
+            id="userSwarms"
+            path="/users/[[user.uid]]/swarms"
+            limit-to-first='1'
+            data={{userSwarms}}>
+        </firebase-query>
+        <firebase-document
+            id="newSwarm"
+            path="/users/[[user.uid]]/swarms/"
+            limit-to-first='1'
+            data={{newSwarmRef}}>
+        </firebase-document>
+        <span class="container flex">
+      <paper-input id="inputTitle" label="Swarm Name"></paper-input>
+        </span>
+      <paper-button id="createButton" on-tap="create">Create</paper-button>
+    </template>
+    <script>
+        Polymer({
+            is: 'word-swarm-init',
+            properties:{
+                page:{
+                    type: String,
+                    notify:true,
+                    value:'view'
+                },
+                newSwarmRef:{
+                    type: Object,
+                    notify:true,
+                },
+                activeswarm:{
+                    type:String,
+                    notify:true,
+                },
+                newSwarmPath:{
+                    type:String,
+                }
+            },
+             observers:[
+                '_updateView(newSwarmRef.swarmId)'
+            ],
+            ready:function(){
+                this.parentNode.addEventListener("iron-select", this.ironSelect);
+            },
+            create: function(){
+                //get moved to cloud function
+                this.$.createButton.disabled=true;
+                this.$.inputTitle.disabled=true;
+                if(this.$.inputTitle.value){ 
+                    this.newUserSwarm = this.$.userSwarms.ref.push({
+                        update: true,
+                        entered: {".sv":"timestamp"},
+                        title: this.$.inputTitle.value,
+                        swarmId: false,
+                        owner: true,
+                        ownerName: this.user.displayName,
+                    }).then(newSwarmSnap=>{
+                        this.$.newSwarm.path = newSwarmSnap.path +'';
+                        this.newSwarmPath = newSwarmSnap.path +'';
+                        this.$.newSwarm.reset();
+                    })
+                }
+            },
+            _updateView(swarmid){
+                if(swarmid){
+                    this.activeswarm = this.newSwarmPath.substr(this.newSwarmPath.lastIndexOf('/') + 1);
+                    this.$.inputTitle.value="";
+                    this.$.createButton.disabled=false;
+                    this.$.inputTitle.disabled=false;
+                    this.page = "view"
+                }
+            }
+        })
+    </script>
+</dom-module>

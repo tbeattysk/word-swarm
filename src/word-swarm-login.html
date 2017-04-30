@@ -1,0 +1,69 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">  
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">  
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">  
+<link rel="import" href="../bower_components/paper-item/paper-item.html">  
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+
+<dom-module id="word-swarm-login">
+    <template>
+        <firebase-auth 
+            id="auth" 
+            user="{{user}}" 
+            status-known="{{statusKnown}}"
+            provider="google">
+        </firebase-auth>
+        <firebase-document
+            id="userPresets"
+            path=""
+            data={{presets}}>
+        <app-header>    
+        <div>
+        <paper-item>
+        <paper-menu-button>
+          <paper-icon-button icon="perm-identity" class="dropdown-trigger"></paper-icon-button>
+          <paper-menu class="dropdown-content">
+              <paper-item on-tap="login" hidden$="[[user]]">Login</paper-item>
+              <paper-item on-tap="logout" hidden$="[[!user]]">Logout</paper-item>
+              <paper-item on-tap="settings" hidden$="[[!user]]"> Settings</paper-item>
+          </paper-menu>
+        </paper-menu-button>
+        <h3 hidden$="[[!user]]">[[user.displayName]]</h3>
+        <h3 hidden$="[[user]]" >Log In</h3>
+        </paper-item>
+        </div>
+        
+    </template>
+    <script>
+        Polymer({
+            is: 'word-swarm-login',
+            properties:{
+                user:{
+                    type: Object,
+                },
+                statusKnown: {
+                    type: Object,
+                }
+            },
+            login: function(){
+                return this.$.auth.signInWithPopup()
+                .then(snap => {
+                    this.$.userPresets.path = "/users/"+snap.user.uid+"/presets";
+                    return this.$.userPresets.initializeStoredValue() 
+                }).then(snap =>{
+                    if(!this.presets.init){
+                        return this.$.userPresets.ref.set({
+                            defaultSwarm:"",
+                            init: true,
+                        })
+                    }
+                })
+            },
+            logout: function(){
+                return this.$.auth.signOut();
+            }
+        })
+    </script>
+</dom-module>

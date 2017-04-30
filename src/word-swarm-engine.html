@@ -1,0 +1,28 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="word-swarm-engine">
+    <template>
+        <style>
+
+        </style>
+
+        <template is="dom-repeat" items="[[wordlist]]" as="word">
+                    <div on-tap="_addWord" id="[[word.$key]]">[[word.name]]</div>
+        </template>
+    </template>
+    <script>
+        Polymer({
+            is: 'word-swarm-engine',
+            properties:{
+                wordlist:{
+                    type:Array,
+                    notify:true
+                }
+            },
+            _addWord:function(e){
+                this.fire("addToConsole",e.target.id);
+            }
+
+        })
+    </script>
+</dom-module>

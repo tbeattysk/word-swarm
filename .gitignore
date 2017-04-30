@@ -1,7 +1,9 @@
 node_modules/
 bower_components/
 *.log
-
+firebase.json
+**/note_modules/**
+**/.*
 build/
 dist/
 

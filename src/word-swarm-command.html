@@ -1,0 +1,66 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">  
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">  
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">  
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">  
+<link rel="import" href="../bower_components/paper-button/paper-button.html">  
+<link rel="import" href="../bower_components/paper-item/paper-item.html">  
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+
+<dom-module id="word-swarm-command">
+    <template>
+        <style> 
+        paper-button.green {
+            background-color: var(--paper-green-500);
+            color: white;
+        }
+        </style>
+        <firebase-auth user="{{user}}"></firebase-auth>
+        <firebase-query
+            id="getTopSwarms"
+            path="/users/[[user.uid]]/swarms"
+            order-by="title"
+            limit-to-first='5'
+            data={{swarms}}>
+        </firebase-query>
+
+        <paper-menu>
+           <paper-button raised class="green" on-tap="newSwarmPage">New Swarm</paper-button>
+            <template is="dom-repeat" items="[[swarms]]" as="swarm">
+                <paper-item toggles swarm="[[swarm]]" on-tap="selectSwarm"><p class="title">[[swarm.title]]</p></paper-item>
+            </template>
+            <paper-item>See all [[totalSwarms]]</paper-item>
+        </paper-menu>   
+    </template>
+    <script>
+        Polymer({
+            is: 'word-swarm-command',
+            properties:{
+                user:{
+                    type: Object,
+                },
+                page: {
+                    type: String,
+                    notify: true
+                },
+                activeswarm: {
+                    type: String,
+                    notify: true
+                }
+            },
+            selectSwarm: function(e){
+                var key = e.currentTarget.swarm.$key;
+                this.activeswarm=key;
+                this.page="view";
+                drawer.toggle();
+            },
+            newSwarmPage: function(){
+                drawer.toggle();
+                this.page="init";
+            },
+
+        })
+    </script>
+</dom-module>
