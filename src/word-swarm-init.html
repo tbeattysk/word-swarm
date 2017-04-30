@@ -59,9 +59,7 @@
                     type:String,
                     notify:true,
                 },
-                newSwarmPath:{
-                    type:String,
-                }
+
             },
              observers:[
                 '_updateView(newSwarmRef.swarmId)'
@@ -82,15 +80,18 @@
                         owner: true,
                         ownerName: this.user.displayName,
                     }).then(newSwarmSnap=>{
-                        this.$.newSwarm.path = newSwarmSnap.path +'';
-                        this.newSwarmPath = newSwarmSnap.path +'';
-                        this.$.newSwarm.reset();
+                        console.log(newSwarmSnap)
+                        this.$.newSwarm.path = `/users/${this.user.uid}/swarms/`+newSwarmSnap.path.o[3];
+                        this.userSwarmId =newSwarmSnap.path.o[3];
+                        //this.$.newSwarm.initializeStoredValue();
                     })
                 }
             },
             _updateView(swarmid){
+                console.log(this.newSwarmRef)
                 if(swarmid){
-                    this.activeswarm = this.newSwarmPath.substr(this.newSwarmPath.lastIndexOf('/') + 1);
+                                    console.log("okay..")
+                    this.activeswarm = userSwarmId;
                     this.$.inputTitle.value="";
                     this.$.createButton.disabled=false;
                     this.$.inputTitle.disabled=false;

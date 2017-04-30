@@ -80,10 +80,13 @@
         },
       },
       _swarmChanged: function(){
-         if(this.presets.init){
-          return this.$.userPresets.child('swarmVisits').push({
+         if(this.presets.init && this.activeSwarm){
+          this.$.userPresets.ref.child('swarmVisits').push({
             time: {".sv": "timestamp"},
             swarm: this.activeSwarm
+          })
+          return this.$.userPresets.ref.update({
+            defaultSwarm: this.activeSwarm
           })
          }
       },
