@@ -83,7 +83,7 @@
                         console.log(newSwarmSnap)
                         this.$.newSwarm.path = `/users/${this.user.uid}/swarms/`+newSwarmSnap.path.o[3];
                         this.userSwarmId =newSwarmSnap.path.o[3];
-                        //this.$.newSwarm.initializeStoredValue();
+                        this.$.newSwarm.initializeStoredValue();
                     })
                 }
             },
