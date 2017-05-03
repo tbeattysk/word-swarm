@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">  
 <link rel="import" href="../bower_components/paper-item/paper-item.html">  
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 
 
@@ -26,13 +27,13 @@
             data={{swarms}}>
         </firebase-query>
 
-        <paper-menu>
+        <paper-listbox>
            <paper-button raised class="green" on-tap="newSwarmPage">New Swarm</paper-button>
             <template is="dom-repeat" items="[[swarms]]" as="swarm">
                 <paper-item toggles swarm="[[swarm]]" on-tap="selectSwarm"><p class="title">[[swarm.title]]</p></paper-item>
             </template>
             <paper-item>See all [[totalSwarms]]</paper-item>
-        </paper-menu>   
+        </paper-listbox>   
     </template>
     <script>
         Polymer({

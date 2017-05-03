@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">  
 <link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">  
 <link rel="import" href="../bower_components/paper-item/paper-item.html">  
-<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 
 
@@ -24,11 +24,13 @@
         <paper-item>
         <paper-menu-button>
           <paper-icon-button icon="perm-identity" class="dropdown-trigger"></paper-icon-button>
-          <paper-menu class="dropdown-content">
+          <paper-listbox
+         class="dropdown-content">
               <paper-item on-tap="login" hidden$="[[user]]">Login</paper-item>
               <paper-item on-tap="logout" hidden$="[[!user]]">Logout</paper-item>
               <paper-item on-tap="settings" hidden$="[[!user]]"> Settings</paper-item>
-          </paper-menu>
+          </paper-listbox
+        >
         </paper-menu-button>
         <h3 hidden$="[[!user]]">[[user.displayName]]</h3>
         <h3 hidden$="[[user]]" >Log In</h3>

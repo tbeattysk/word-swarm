@@ -68,9 +68,9 @@
                 this.parentNode.addEventListener("iron-select", this.ironSelect);
             },
             create: function(){
-                //get moved to cloud function
                 this.$.createButton.disabled=true;
                 this.$.inputTitle.disabled=true;
+                //TO DO: add loading spinner
                 if(this.$.inputTitle.value){ 
                     this.newUserSwarm = this.$.userSwarms.ref.push({
                         update: true,
@@ -79,7 +79,7 @@
                         swarmId: false,
                         owner: true,
                         ownerName: this.user.displayName,
-                    }).then(newSwarmSnap=>{
+                    }).then(newSwarmSnap=>{ //update the path to the new swarm
                         console.log(newSwarmSnap)
                         this.$.newSwarm.path = `/users/${this.user.uid}/swarms/`+newSwarmSnap.path.o[3];
                         this.userSwarmId =newSwarmSnap.path.o[3];
@@ -88,10 +88,10 @@
                 }
             },
             _updateView(swarmid){
-                console.log(this.newSwarmRef)
+                //when server creates the new swarm globally, it updates the user's reference
+                //once the user has the appropriate reference, send user to the swarm
                 if(swarmid){
-                                    console.log("okay..")
-                    this.activeswarm = userSwarmId;
+                    this.activeswarm = this.userSwarmId;
                     this.$.inputTitle.value="";
                     this.$.createButton.disabled=false;
                     this.$.inputTitle.disabled=false;
