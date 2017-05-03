@@ -1,14 +1,16 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-
+<script type="text/javascript" src="bubbles/FieldItems.js"></script>
+<script type="text/javascript" src="bubbles/SimFieldEngine.js"></script>
+<script type="text/javascript" src="bubbles/SimController.js"></script>
 <dom-module id="word-swarm-engine">
     <template>
         <style>
-
         </style>
-
+        <div id="playground" style="z-index:0; position:absolute; top:0; left:0;"></div>
         <template is="dom-repeat" items="[[wordlist]]" as="word">
                     <div on-tap="_addWord" id="[[word.$key]]">[[word.name]]</div>
         </template>
+        </div>
     </template>
     <script>
         Polymer({
@@ -17,10 +19,19 @@
                 wordlist:{
                     type:Array,
                     notify:true
+                },
+                sim:{
+                    type:Object
                 }
             },
             _addWord:function(e){
                 this.fire("addToConsole",e.target.id);
+            },
+            ready(){
+                this.sim = new SimController(document.getElementById('playground'));
+                var drawing = false;
+                animation = requestAnimationFrame(this.sim.draw.bind(this.sim));
+                var animation
             }
 
         })

@@ -3,6 +3,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
@@ -16,11 +17,14 @@
 <dom-module id="word-swarm-app">
   <template>
     <style>
-       :host {
+      :host {
         display: block;
       }
       app-drawer{
         z-index: 1
+      }
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
       }
     </style>
     <firebase-app 
@@ -35,16 +39,19 @@
       path=""
       data={{presets}}>
     </firebase-document>
-    <app-header>
-      <app-toolbar>
-        <paper-icon-button icon="menu" onclick="drawer.toggle()"></paper-icon-button>
-      </app-toolbar>
-    </app-header>
-   
-    <app-drawer id="drawer" swipe-open>
-      <word-swarm-login></word-swarm-login>
-      <word-swarm-command page={{page}} activeswarm={{activeSwarm}}></word-swarm-command>
-    </app-drawer>
+   <app-drawer-layout force-narrow>
+      <app-drawer id="drawer" slot="drawer">
+        <word-swarm-login></word-swarm-login>
+        <word-swarm-command id="command" page={{page}} activeswarm={{activeSwarm}}></word-swarm-command>
+      </app-drawer>
+
+      <app-header>
+        <app-toolbar>
+          <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+        </app-toolbar>
+      </app-header>
+   </app-drawer-layout>
+    
     <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
       <word-swarm-init name="init" page={{page}} activeswarm={{activeSwarm}}></word-swarm-init>
       <word-swarm-view name="view" swarm={{activeSwarm}}></word-swarm-view>
@@ -78,6 +85,12 @@
           type: String,
           value: 'view'
         },
+      },
+      ready: function(){
+        this.$.command.addEventListener('closeDrawer',()=>{
+          //should add loading screen and wait for that swarm to load before closing drawer.
+          this.$.drawer.close();
+        });
       },
       _swarmChanged: function(){
          if(this.presets.init && this.activeSwarm){

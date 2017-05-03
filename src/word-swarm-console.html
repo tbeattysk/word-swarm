@@ -21,7 +21,7 @@
             data={{mySwarm}}>
         </firebase-query>
         <template is="dom-repeat" items="[[wordlist]]" as="cword">
-                    <div on-tap="_removeWord" id="[[cword.$key]]">[[cword.name]]</div>
+            <div on-tap="_removeWord" id="[[cword.$key]]">[[cword.name]]</div>
         </template>
     </template>
     <script>
