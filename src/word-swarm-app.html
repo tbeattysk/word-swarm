@@ -20,11 +20,23 @@
       :host {
         display: block;
       }
+      word-swarm-view {
+        display: block;
+        min-height: 100vh;
+      }
+      app-drawer-layout{
+        z-index: 1;
+        pointer-events: none;
+      }
+      paper-icon-button{
+        pointer-events: all;
+      }
       app-drawer{
-        z-index: 1
+        pointer-events:all;
       }
       app-drawer-layout:not([narrow]) [drawer-toggle] {
         display: none;
+        z-index: 1
       }
     </style>
     <firebase-app 

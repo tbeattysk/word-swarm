@@ -13,6 +13,14 @@
 <dom-module id="word-swarm-view">
     <template>
         <style>
+             word-swarm-engine {
+                position: absolute;
+                top: 0;
+                left: 0;
+                min-width: 100vw;
+                min-height: 100vh;
+                overflow: visible;
+            }   
             paper-icon-button#addButton {
                 background-color:rgb(204, 24, 30); 
                 color:white; 
@@ -44,12 +52,15 @@
             data={{uswerWords}}>
         </firebase-query>
 
-        <app-drawer id="consoledrawer" persistent align="right">
+       
+        <word-swarm-engine id="wordSwarm" wordlist=[[swarmWords]]>
+            <template is="dom-repeat" items="[[swarmWords]]" as="word">
+                <word-swarm-word on-tap="_addToConsole" id="[[word.$key]]" name="[[word.name]]">[[word.name]]</word-swarm-word>
+            </template>
+        </word-swarm-engine>
+         <app-drawer id="consoledrawer" persistent align="right">
             <word-swarm-console id="wordConsole" wordlist=[[consoleWords]]></word-swarm-console>
         </app-drawer>
-        <div>
-            <word-swarm-engine id="wordSwarm" wordlist=[[swarmWords]]></word-swarm-engine>
-        </div>
         <paper-dialog id="word" withBackdrop>
             <paper-input id="newWord"></paper-input>
             <div class="buttons">
@@ -60,7 +71,7 @@
     </template>
     <script>
       // define the element's class element
-      class MyElement extends Polymer.Element {
+      class wordSwarmView extends Polymer.Element {
         static get is() { return 'word-swarm-view'; }
         connectedCallback() {
           super.connectedCallback();
@@ -86,12 +97,12 @@
                 },
                 swarmWords:{
                     type: Array,
-                    //notify:true,
+                    notify:true,
                     value:[],
                 },
                 consoleWords:{
                     type: Array,
-                    //notify:true,
+                    notify:true,
                     value:[]
                 }
             }
@@ -113,13 +124,6 @@
                 this.consoleWords = this.consoleWords.filter(function(word){
                     return word.$key != e.detail});
                 if(this.consoleWords.length == 0) {this.$.consoledrawer.close();}
-            });
-            this.$.wordSwarm.addEventListener('addToConsole',(e)=>{
-                this.push('consoleWords',(this.swarmWords.filter(function(word){
-                    return word.$key == e.detail})[0]));
-                this.swarmWords = this.swarmWords.filter(function(word){
-                    return word.$key != e.detail});
-                this.$.consoledrawer.open();
             });
         }
 
@@ -174,12 +178,20 @@
             this.$.newWord.value="";
             this.$.word.close();
         }
+        _addToConsole(e){
+                this.push('consoleWords',(this.swarmWords.filter(function(word){
+                    return word.$key == e.currentTarget.id
+                })[0]));
+                this.swarmWords = this.swarmWords.filter(function(word){
+                    return word.$key != e.currentTarget.id});
+                this.$.consoledrawer.open();
+        }
         _addWordDialog(){
             this.$.word.open()
         }
       }
       
       // Associate the new class with an element name
-      window.customElements.define(MyElement.is, MyElement);
+      window.customElements.define(wordSwarmView.is, wordSwarmView);
     </script>
 </dom-module>

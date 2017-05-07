@@ -1,39 +1,80 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../bower_components/polymer/lib/utils/flattened-nodes-observer.html">
 <script type="text/javascript" src="bubbles/FieldItems.js"></script>
 <script type="text/javascript" src="bubbles/SimFieldEngine.js"></script>
 <script type="text/javascript" src="bubbles/SimController.js"></script>
+<link rel="import" href="word-swarm-word.html">
 <dom-module id="word-swarm-engine">
     <template>
         <style>
+            #playground{
+                width: 100vw;
+                height: 100vh;
+            }
+
         </style>
-        <div id="playground" style="z-index:0; position:absolute; top:0; left:0;"></div>
-        <template is="dom-repeat" items="[[wordlist]]" as="word">
-                    <div on-tap="_addWord" id="[[word.$key]]">[[word.name]]</div>
-        </template>
+        <div id="playground">
+        <slot id="slot"></slot>
         </div>
     </template>
     <script>
-        Polymer({
-            is: 'word-swarm-engine',
-            properties:{
-                wordlist:{
-                    type:Array,
-                    notify:true
-                },
-                sim:{
-                    type:Object
-                }
-            },
-            _addWord:function(e){
-                this.fire("addToConsole",e.target.id);
-            },
-            ready(){
-                this.sim = new SimController(document.getElementById('playground'));
+        class wordSwarmEngine extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
+            static get is() { return 'word-swarm-engine';}
+            connectedCallback() {
+                super.connectedCallback();
+                requestAnimationFrame(this._installListeners.bind(this));
+            }
+            ready() {
+                super.ready();
+                this._observer = new Polymer.FlattenedNodesObserver(this.$.slot, (info) => {
+                    this._processNewNodes(info.addedNodes);
+                    this._processRemovedNodes(info.removedNodes);
+                });
+                this.sim = new SimController(this.$.playground);
                 var drawing = false;
-                animation = requestAnimationFrame(this.sim.draw.bind(this.sim));
-                var animation
+                var animation = requestAnimationFrame(this.sim.draw.bind(this.sim));
+                this.async(this.notifyResize, 1);
+            }
+            static get properties(){
+                return{
+                    wordlist:{
+                        type:String,
+                        notify:true,
+                        value:"hello"
+                    },
+                    sim:{
+                        type:Object
+                    }
+                }
             }
 
-        })
+            _installListeners() {
+               this.addEventListener('iron-resize', this._onIronResize);
+            }
+            _processNewNodes(addedNodes){
+                addedNodes.forEach((node)=> {           
+                    if(node.id){
+                        this.sim.addObject(node);
+                    }
+                })
+            }
+            _processRemovedNodes(removedNodes){
+                removedNodes.forEach((node)=> {           
+                    if(node.id){
+                        console.log(node)
+                    }
+                })
+            }
+            _onIronResize(){
+                console.log(this.clientWidth);
+                this.sim.resize(this.clientWidth,this.clientHeight)
+            }
+            
+            
+
+        }
+    window.customElements.define(wordSwarmEngine.is, wordSwarmEngine);
     </script>
 </dom-module>
