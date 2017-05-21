@@ -43,7 +43,15 @@ class SimController{
 			this.engine.addObject(new FieldObject(x,y,el.clientWidth,el.clientHeight,this.engine.objFieldX, this.engine.objFieldY, el));
 			el.style.transform="translate("+x+"px, "+y+"px)";
 	}
-
+	removeObject(el){
+		for(let i=0 ;i<this.engine.objects.length;i++){
+			if(this.engine.objects[i].el.id == el.id){
+				console.log(this.engine.objects[i].el)
+				this.engine.removeObject(i);
+				el.remove();
+			}
+		}
+	}
 	draw(){
 		this.engine.objects.forEach((object,i,a)=>{
 			object.el.style.transform="translate("+object.x+"px,"+object.y+"px)";

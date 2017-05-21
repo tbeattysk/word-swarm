@@ -1,4 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+
 
 <dom-module id="word-swarm-word">
   <template>
@@ -11,7 +13,7 @@
             left: 44px;
             user-select: none;
         }
-        .box {
+        #box {
           position: relative;
           display: inline-block;
           margin: 0px;
@@ -24,88 +26,111 @@
           transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
           opacity: 1;
         }
+        #box:hover, #box.holding{
+          background-color:#fff;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+          transform: scale(1.1, 1.1);
+        }
     </style>
 
-    <div  id="box" class="box">
+    <div id="box" class="box">
             <slot></slot>
       <div>
   </template>
 
   <script>
-    Polymer({
-      is: 'word-swarm-word',
-      properties:{
-          name:{
-              type: Object,
-          }
-      },
-      listeners:{
-          'tap':'tap',
-          'dragstart': 'dragStart',
-          'drag':'drag',
-          'dragend':'dragEnd',
-          'mouseenter':'mouseEnter',
-          'mouseout':'mouseOut',
-          'mousedown':'mouseDown',
-          'mouseup':'mouseUp'
-      },
-      ready:function(){
-          console.log(this.name);
-      },
-      tap:function(){
-      },
-      dragStart:function(e){
+    class wordSwarmWord extends Polymer.GestureEventListeners(Polymer.Element) {
+    static get is() { return 'word-swarm-word'; }
+     
+    constructor() {
+        super();
+        Polymer.Gestures.addListener(this, 'tap', e => this.handleTap(e));
+    }
+
+    static get properties(){
+      return{
+          name:{type: Object},
+          holding:{type: Boolean,
+            notify:true,
+            reflectToAttribute: true,
+            observer:"_changeHold"}
+      }
+    }
+    _changeHold(){
+      if(this.holding == true){
+        this.$.box.className ="holding";
+      }else{
+        this.$.box.className ="";
+      }
+
+    }
+
+
+      // listeners:{
+      //     'tap':'tap',
+      //     'dragstart': 'dragStart',
+      //     'drag':'drag',
+      //     'dragend':'dragEnd',
+      //     'mouseenter':'mouseEnter',
+      //     'mouseout':'mouseOut',
+      //     'mousedown':'mouseDown',
+      //     'mouseup':'mouseUp'
+      // },
+      
+      handleTap(e){
+
+      }
+      dragStart(e){
           let startPos = this.getBoundingClientRect()
           this.xOffset = e.clientX - startPos.left;
           this.yOffset = e.clientY - startPos.top;
           this.$.box.style.transform= "scale(0, 0)";
           this.style["cursor"]= "-webkit-grabbing";
 
-      },
-      mouseEnter:function(){
+      }
+      mouseEnter(){
         this.$.box.style["background-color"]= "#fff";
         this.$.box.style["box-shadow"]= "0 1px 2px rgba(0, 0, 0, 0.1)";
         this.$.box.style["z-index"]= "2";
         this.$.box.style.transform= "scale(1.1, 1.1)";
           // transform: scale(1.1, 1.1);
-      },
-      mouseOut:function(){
+      }
+      mouseOut(){
         this.$.box.style["-webkit-transition"]= "all 0.6s";
         this.$.box.style["transition"]= "all 0.6s";
         this.$.box.style["background-color"]= "transparent"
         this.$.box.style["box-shadow"]= "0 0 0 rgba(0, 0, 0, 0)";
         this.$.box.style.transform= "scale(1, 1)";
         this.$.box.style["z-index"]= "0";
-      },
-      mouseDown: function(){
+      }
+      mouseDown(){
         this.$.box.style["box-shadow"]= "0 2px 3px rgba(0, 0, 0, 0.1)";
          this.$.box.style["cursor"]= "-webkit-grabbing";
         this.$.box.style.transform= "scale(1.2, 1.2)";
-      },
-      mouseUp: function(){
+      }
+      mouseUp(){
         this.$.box.style["cursor"]= "-webkit-grab";
         this.$.box.style["-webkit-transition"]= "all 0.6s";
         this.$.box.style["transition"]= "all 0.6s";
         this.$.box.style["box-shadow"]= "0 1px 2px rgba(0, 0, 0, 0.1)";
         this.$.box.style.transform= "scale(1.1, 1.1)";
-      },
-      drag:function(e){
+      }
+      drag(e){
         e.preventDefault();
         if(e.clientX != 0){
           this.style.left = e.clientX - this.xOffset + "px"
           this.style.top = e.clientY - this.yOffset + "px"
         }
-      },
-      dragEnd:function(e){
+      }
+      dragEnd(e){
         //this.style.transform = "translate("+ (e.screenX - this.xOffset) + "px, "+ (e.screenY - this.yOffset) + "px)"
         this.$.box.style["cursor"]= "-webkit-grab";
         this.$.box.style.transform= "scale(1.1, 1.1)";
         //this.$.box.style["-webkit-transition"]= "all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)";
         //this.$.box.style["transition"]= "all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)";
-        
-      },
+      }
       
-    });
-
+    };
+    customElements.define(wordSwarmWord.is, wordSwarmWord);
   </script>
 </dom-module>

@@ -2,46 +2,102 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">  
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">  
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 
 <dom-module id="word-swarm-console">
     <template>
-        <style>
-
+        <style include="iron-flex iron-flex-alignment">
+            .fixture{
+                display: block;
+                padding: 5px;
+                position: relative;
+            }
+            :host{
+                top:0;
+            }
         </style>
-        <firebase-auth user="{{user}}"></firebase-auth>
-        <firebase-document
-            id="userSwarms"
-            path="/users/[[user.uid]]/swarms/[[swarm]]"
-            data={{userSwarm}}>
-        </firebase-document>
-        <firebase-query
-            id="mySwarm"
-            path="/swarms/[[userSwarm.swarmId]]/users/[[user.uid]]"
-            data={{mySwarm}}>
-        </firebase-query>
-        <template is="dom-repeat" items="[[wordlist]]" as="cword">
-            <div on-tap="_removeWord" id="[[cword.$key]]">[[cword.name]]</div>
-        </template>
+        <div id="words"  class="layout horizontal wrap center-justified">
+            <slot id="slot"></slot>
+        </div>
     </template>
     <script>
-        Polymer({
-            is: 'word-swarm-console',
-            properties:{
-                wordlist:{
-                    type:Array,
-                    notify:true
+        class wordSwarmConsole extends Polymer.Element {
+            static get is() { return 'word-swarm-console'; }
+             ready() {
+                super.ready();
+                this._observer = new Polymer.FlattenedNodesObserver(this.$.slot, (info) => {
+                    this._processNewNodes(info.addedNodes);
+                    this._processRemovedNodes(info.removedNodes);
+                });
+             }
+            static get properties(){
+                return{
+                    wordList:{
+                        type:Array,
+                        notify:true
+                    }
                 }
-            },
-            observers:[
-            ],
-            ready:function(){
-    
-            },
-            _removeWord:function(e){
-                this.fire("removeFromConsole",e.target.id);
             }
 
-        })
+            removeWord(el){
+                this.$.words.querySelectorAll(`div#${el.id}`)[0].remove()
+                el.remove();
+                this.redistributeWords();
+            }
+            _processNewNodes(addedNodes){
+                addedNodes.forEach((node)=> {           
+                    if(node.id){
+                        node.style.left = `${this.newWordStartLocation[0]}px`;
+                        node.style.top = `${this.newWordStartLocation[1]}px`;  
+                        this.redistributeWords();
+                    }
+                })
+            }
+            _processRemovedNodes(removedNodes){
+                removedNodes.forEach((node)=> {           
+                    if(node.id){
+                        console.log(node.id)
+                    }
+                })
+            }
+            fixture(id, rect){
+                const fixtureWidth = rect.right - rect.left;
+                var iDiv = document.createElement('div');
+                iDiv.id = id;
+                iDiv.className = 'fixture';
+                iDiv.style.width = fixtureWidth+"px";
+                iDiv.style.height = rect.bottom - rect.top +"px";
+                this.$.words.appendChild(iDiv);
+                this.newWordStartLocation = [rect.left-this.getBoundingClientRect().left,
+                 rect.top]
+            }
+            clearFixtures(){
+                while(this.$.words.getElementsByTagName('div').length != 0){
+                    console.log(this.$.words.getElementsByTagName('div'))
+                    this.$.words.getElementsByTagName('div')[0].remove()
+                }
+            }   
+            redistributeWords() {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        const fixtures = Array.from(this.$.words.getElementsByTagName('div'))
+                        this.$.slot.assignedNodes().forEach((el)=>{
+                            if(el.id){
+                                fixtures.forEach((fix)=>{
+                                    if(fix.id == el.id){
+                                        console.log()
+                                        el.style.left = fix.getBoundingClientRect().left-this.getBoundingClientRect().left+"px";
+                                        el.style.top = fix.getBoundingClientRect().top+"px";
+                                    }
+                                })
+                            }
+                        })
+                    }, 20); //wait 20ms before running to give time to set animations
+                });
+            }
+
+        }
+        window.customElements.define(wordSwarmConsole.is, wordSwarmConsole);
     </script>
 </dom-module>

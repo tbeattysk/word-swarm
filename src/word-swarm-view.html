@@ -14,13 +14,23 @@
     <template>
         <style>
              word-swarm-engine {
-                position: absolute;
+                position: fixed;
                 top: 0;
                 left: 0;
                 min-width: 100vw;
                 min-height: 100vh;
                 overflow: visible;
-            }   
+            } 
+             word-swarm-word{
+                z-index: 1;
+            } 
+            word-swarm-console > word-swarm-word{
+                -webkit-transition: all 2.6s ease-in-out);
+                transition: all 2.6s ease-in-out;
+            }
+            word-swarm-word:hover{
+                z-index: 2;
+            }
             paper-icon-button#addButton {
                 background-color:rgb(204, 24, 30); 
                 color:white; 
@@ -28,11 +38,17 @@
                 position: absolute;
                 bottom: 20px;
                 left: 20px;
+                z-index: 3;
             }
             app-drawer{               
+                pointer-events: none;
+                top: 0;
                 --app-drawer-content-container:{
-                    background-color: rgba(210, 210, 210, 0.5);
-                } 
+                    background-color: transparent;
+                }
+            }
+            app-drawer > word-swarm-console{
+                pointer-events: all;
             }
         </style>
         <firebase-auth user="{{user}}"></firebase-auth>
@@ -51,15 +67,18 @@
             path="/swarms/[[userSwarm.swarmId]]/users/[[user.uid]]/wordsAdded"
             data={{uswerWords}}>
         </firebase-query>
-
-       
+        
         <word-swarm-engine id="wordSwarm" wordlist=[[swarmWords]]>
             <template is="dom-repeat" items="[[swarmWords]]" as="word">
-                <word-swarm-word on-tap="_addToConsole" id="[[word.$key]]" name="[[word.name]]">[[word.name]]</word-swarm-word>
+                <word-swarm-word on-tap="_wordTapped" id="[[word.$key]]" name="[[word.name]]">[[word.name]]</word-swarm-word>
             </template>
         </word-swarm-engine>
-         <app-drawer id="consoledrawer" persistent align="right">
-            <word-swarm-console id="wordConsole" wordlist=[[consoleWords]]></word-swarm-console>
+        <app-drawer id="consoledrawer" persistent align="right">
+            <word-swarm-console id="wordConsole" wordlist=[[consoleWords]]>
+                <template is="dom-repeat" items="[[consoleWords]]" as="word">
+                    <word-swarm-word on-tap="_consoleWordTapped" id="[[word.$key]]" holding name="[[word.name]]">[[word.name]]</word-swarm-word>
+                </template>
+            </word-swarm-console>
         </app-drawer>
         <paper-dialog id="word" withBackdrop>
             <paper-input id="newWord"></paper-input>
@@ -83,9 +102,9 @@
         static get properties(){
             return{
                 swarm:{
-                type: String,
-                notify:true,
-                observer:"_swarmChosen"
+                    type: String,
+                    notify:true,
+                    observer:"_swarmChosen"
                 },
                 words:{
                     type: Array,
@@ -164,6 +183,7 @@
         }
         _swarmChosen(){
             this.consoleWords=[];
+            this.$.wordConsole.clearFixtures();
             this.swarmWords=[];
         }
         _userSwarmObserver(){      
@@ -178,13 +198,20 @@
             this.$.newWord.value="";
             this.$.word.close();
         }
-        _addToConsole(e){
-                this.push('consoleWords',(this.swarmWords.filter(function(word){
-                    return word.$key == e.currentTarget.id
-                })[0]));
-                this.swarmWords = this.swarmWords.filter(function(word){
-                    return word.$key != e.currentTarget.id});
-                this.$.consoledrawer.open();
+        _wordTapped(e){
+            this.$.wordConsole.fixture(e.target.id, e.target.getBoundingClientRect());
+            this.$.wordSwarm.removeWord(e.currentTarget)
+            const id = e.currentTarget.id
+            this.push('consoleWords',(this.swarmWords.filter(function(word){
+                return word.$key == e.currentTarget.id
+            })[0]));
+            this.$.consoledrawer.open();
+        }
+        _consoleWordTapped(e){
+            this.push('swarmWords',(this.consoleWords.filter(function(word){
+                return word.$key == e.currentTarget.id
+            })[0]));
+            this.$.wordConsole.removeWord(e.currentTarget);
         }
         _addWordDialog(){
             this.$.word.open()

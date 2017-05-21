@@ -61,11 +61,14 @@
                 })
             }
             _processRemovedNodes(removedNodes){
-                removedNodes.forEach((node)=> {           
-                    if(node.id){
-                        console.log(node)
-                    }
+                 removedNodes.forEach((node)=> {           
+                     if(node.id){
+                         this.sim.removeObject(node);
+                     }
                 })
+            }
+            removeWord(node){
+                this.sim.removeObject(node)
             }
             _onIronResize(){
                 console.log(this.clientWidth);
