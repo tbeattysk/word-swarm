@@ -17,7 +17,7 @@
                 top:0;
             }
         </style>
-        <div id="words"  class="layout horizontal wrap center-justified">
+        <div id="words"  class="layout horizontal wrap end-justified">
             <slot id="slot"></slot>
         </div>
     </template>
@@ -41,9 +41,11 @@
             }
 
             removeWord(el){
+                const pos = el.getBoundingClientRect();
                 this.$.words.querySelectorAll(`div#${el.id}`)[0].remove()
                 el.remove();
                 this.redistributeWords();
+                return pos;
             }
             _processNewNodes(addedNodes){
                 addedNodes.forEach((node)=> {           

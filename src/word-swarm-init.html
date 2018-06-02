@@ -80,9 +80,8 @@
                         owner: true,
                         ownerName: this.user.displayName,
                     }).then(newSwarmSnap=>{ //update the path to the new swarm
-                        console.log(newSwarmSnap)
                         this.$.newSwarm.path = `/users/${this.user.uid}/swarms/`+newSwarmSnap.path.o[3];
-                        this.userSwarmId =newSwarmSnap.path.o[3];
+                        this.userSwarmId = newSwarmSnap.path.o[3];
                         this.$.newSwarm.initializeStoredValue();
                     })
                 }
@@ -95,7 +94,7 @@
                     this.$.inputTitle.value="";
                     this.$.createButton.disabled=false;
                     this.$.inputTitle.disabled=false;
-                    this.page = "view"
+                    this.page = "view";
                 }
             }
         })

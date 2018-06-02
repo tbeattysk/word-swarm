@@ -46,17 +46,28 @@
                     },
                     sim:{
                         type:Object
+                    },
+                    returnWordPos:{
+                        type:Object,
+                        value:{left:0,top:0}
                     }
                 }
             }
-
             _installListeners() {
                this.addEventListener('iron-resize', this._onIronResize);
             }
+
             _processNewNodes(addedNodes){
                 addedNodes.forEach((node)=> {           
                     if(node.id){
-                        this.sim.addObject(node);
+                        if(this.returnWordPos.left == 0){
+                            this.sim.addObject(node);
+                            node.holding = false;         
+                        }
+                        else{
+                            this.sim.addObject(node,this.returnWordPos.left-50,this.returnWordPos.top-30);
+                            node.holding = false;
+                        }
                     }
                 })
             }
@@ -70,9 +81,18 @@
             removeWord(node){
                 this.sim.removeObject(node)
             }
+            stopElement(e){
+                this.sim.stopElement(e);
+            }
+            startElement(e){
+                this.sim.startElement(e);
+            }
             _onIronResize(){
-                console.log(this.clientWidth);
                 this.sim.resize(this.clientWidth,this.clientHeight)
+            }
+            stopSim(){
+                console.log("stop");
+                this.sim.run = false;
             }
             
             

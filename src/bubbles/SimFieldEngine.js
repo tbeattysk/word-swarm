@@ -37,20 +37,11 @@ class SimEngine{
        
     }
     //returns the next location of the objects
-    getNextFrame(distance, mouseX, mouseY, mouseDown){
+    getNextFrame(distance){
        // console.log(this.isAnyObjectHeld());
-        this.objectBeingHeld = this.isAnyObjectHeld();
         this.objects.map(object => object.getCenter()) //get the corners for each object
             .map((centers,i) => this.measureForceField(centers,i)) // from the 4 corners get the force acting on each object (fx,fy)
-            .map((force,i) => this.objects[i].getNextLocation(force, distance, mouseX, mouseY, mouseDown, this.objectBeingHeld));//get the next location of each object based on this force
-    }
-
-    isAnyObjectHeld(){
-        this.objects.forEach(object=>{
-            if(object.held){
-                return true;
-            }else return false;
-        });
+            .map((force,i) => this.objects[i].getNextLocation(force, distance));//get the next location of each object based on this force
     }
     //adds an object
     addObject(object){

@@ -2,12 +2,12 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">  
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">  
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">  
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">  
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">    
 <link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">  
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html"> 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">  
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="word-swarm-console.html">
 <link rel="import" href="word-swarm-engine.html">
 <dom-module id="word-swarm-view">
@@ -25,11 +25,12 @@
                 z-index: 1;
             } 
             word-swarm-console > word-swarm-word{
-                -webkit-transition: all 2.6s ease-in-out);
-                transition: all 2.6s ease-in-out;
+                -webkit-transition: all 1.5s ease-in-out;
+                transition: all 1.5s ease-in-out;
             }
             word-swarm-word:hover{
                 z-index: 2;
+                transform: translate(0px,0px)
             }
             paper-icon-button#addButton {
                 background-color:rgb(204, 24, 30); 
@@ -70,23 +71,26 @@
         
         <word-swarm-engine id="wordSwarm" wordlist=[[swarmWords]]>
             <template is="dom-repeat" items="[[swarmWords]]" as="word">
-                <word-swarm-word on-tap="_wordTapped" id="[[word.$key]]" name="[[word.name]]">[[word.name]]</word-swarm-word>
+                <word-swarm-word id="[[word.$key]]" class="swarm" holding name="[[word.name]]">[[word.name]]</word-swarm-word>
             </template>
         </word-swarm-engine>
         <app-drawer id="consoledrawer" persistent align="right">
             <word-swarm-console id="wordConsole" wordlist=[[consoleWords]]>
                 <template is="dom-repeat" items="[[consoleWords]]" as="word">
-                    <word-swarm-word on-tap="_consoleWordTapped" id="[[word.$key]]" holding name="[[word.name]]">[[word.name]]</word-swarm-word>
+                    <word-swarm-word on-tap="_consoleWordTapped" id="[[word.$key]]" class="console" holding name="[[word.name]]">[[word.name]]</word-swarm-word>
                 </template>
             </word-swarm-console>
         </app-drawer>
-        <paper-dialog id="word" withBackdrop>
+
+        <paper-dialog id="word">
             <paper-input id="newWord"></paper-input>
             <div class="buttons">
                 <paper-button on-tap="_addWord">Add</paper-button>
             </div>
         </paper-dialog>
+
         <paper-icon-button id="addButton" icon="add" on-click="_addWordDialog"></paper-icon-button>
+
     </template>
     <script>
       // define the element's class element
@@ -98,6 +102,8 @@
         }
         ready() {
           super.ready();
+          console.log("viewing: "+this.swarm)
+          this.$.consoledrawer.open();
         }
         static get properties(){
             return{
@@ -132,17 +138,28 @@
                 '_userSwarmObserver(userSwarm.*)'
         ]
       }
-
+      closeSim(){
+         this.$.wordSwarm.sim.run = false;
+      }
+      openSim(){
+          this.$.wordSwarm.sim.run = true;
+          this.$.wordSwarm.sim.draw();
+      }
       _installListeners() {
-          this.$.word.addEventListener('iron-overlay-closed',()=>{
+           this.$.word.addEventListener('iron-overlay-closed',()=>{
                 this.$.newWord.value="";
             });
-            this.$.wordConsole.addEventListener('removeFromConsole',(e)=>{
-                this.push('swarmWords',(this.consoleWords.filter(function(word){
-                    return word.$key == e.detail})[0]));
-                this.consoleWords = this.consoleWords.filter(function(word){
-                    return word.$key != e.detail});
-                if(this.consoleWords.length == 0) {this.$.consoledrawer.close();}
+            this.addEventListener('stopMe',(e)=>{
+                if(e.detail.className == "swarm"){
+                this.$.wordSwarm.stopElement(e.detail)}
+            });
+            this.addEventListener('releaseMe',(e)=>{
+                if(e.detail.className == "swarm"){
+                this.$.wordSwarm.startElement(e.detail)}
+            });
+            this.addEventListener('chooseMe',(e)=>{
+                if(e.detail.className == "swarm"){
+                this._wordTapped(e.detail);}
             });
         }
 
@@ -198,20 +215,19 @@
             this.$.newWord.value="";
             this.$.word.close();
         }
-        _wordTapped(e){
-            this.$.wordConsole.fixture(e.target.id, e.target.getBoundingClientRect());
-            this.$.wordSwarm.removeWord(e.currentTarget)
-            const id = e.currentTarget.id
+        _wordTapped(el){
+            this.$.wordConsole.fixture(el.id, el.getBoundingClientRect());
+            this.$.wordSwarm.removeWord(el)
+            const id = el.id
             this.push('consoleWords',(this.swarmWords.filter(function(word){
-                return word.$key == e.currentTarget.id
+                return word.$key == el.id
             })[0]));
-            this.$.consoledrawer.open();
         }
         _consoleWordTapped(e){
+            this.$.wordSwarm.returnWordPos = this.$.wordConsole.removeWord(e.currentTarget);
             this.push('swarmWords',(this.consoleWords.filter(function(word){
                 return word.$key == e.currentTarget.id
             })[0]));
-            this.$.wordConsole.removeWord(e.currentTarget);
         }
         _addWordDialog(){
             this.$.word.open()

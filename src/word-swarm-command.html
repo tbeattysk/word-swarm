@@ -16,6 +16,7 @@
             background-color: var(--paper-green-500);
             color: white;
         }
+
         </style>
         <firebase-auth user="{{user}}"></firebase-auth>
         <firebase-query
@@ -58,7 +59,8 @@
                 this._closeDrawer()
             },
             newSwarmPage: function(){
-                this._closeDrawer()
+                this.dispatchEvent(new CustomEvent('newSwarm'));
+                this._closeDrawer();
                 this.page="init";
             },
             _closeDrawer: function(){

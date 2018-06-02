@@ -27,6 +27,7 @@
       app-drawer-layout{
         z-index: 1;
         pointer-events: none;
+        top: 0px;
       }
       paper-icon-button{
         pointer-events: all;
@@ -37,6 +38,12 @@
       app-drawer-layout:not([narrow]) [drawer-toggle] {
         display: none;
         z-index: 1
+      }
+      iron-pages{
+                position: fixed;
+                min-height: 100vh;
+                min-width: 100vw;
+                top:0px;
       }
     </style>
     <firebase-app 
@@ -66,7 +73,7 @@
     
     <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
       <word-swarm-init name="init" page={{page}} activeswarm={{activeSwarm}}></word-swarm-init>
-      <word-swarm-view name="view" swarm={{activeSwarm}}></word-swarm-view>
+      <word-swarm-view name="view" id = "viewer" swarm={{activeSwarm}}></word-swarm-view>
       <word-swarm-404-warning name="404"></word-swarm-404-warning>
     </iron-pages>
 
@@ -95,7 +102,8 @@
         },
         page: {
           type: String,
-          value: 'view'
+          value: 'view',
+          observer:"_swarmControl"
         },
       },
       ready: function(){
@@ -103,6 +111,23 @@
           //should add loading screen and wait for that swarm to load before closing drawer.
           this.$.drawer.close();
         });
+        this.$.command.addEventListener('newSwarm',()=>{
+          //should add loading screen and wait for that swarm to load before closing drawer.
+          this.$.viewer.closeSim();
+        });
+
+      },
+      _swarmControl: function(){
+        console.log(this.page)
+        setTimeout(()=>{
+        switch(this.page){
+          case "view":
+            this.$.viewer.openSim();
+            break;
+          default:
+            this.$.viewer.closeSim();
+        }
+        },1000)
       },
       _swarmChanged: function(){
          if(this.presets.init && this.activeSwarm){
@@ -121,6 +146,7 @@
           return this.$.userPresets.initializeStoredValue()
           .then(snap => {
             this.activeSwarm = this.presets.defaultSwarm;
+            this.page = 'view';
           })
         }
       }
